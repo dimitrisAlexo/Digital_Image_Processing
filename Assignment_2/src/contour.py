@@ -14,22 +14,12 @@ def get_contour(x):
     # - c: cell array with one cell for each contour of the letter; each cell contains an N x 2 matrix, where N is
     # the number of points that describe the contour and each row has the two coordinates of each point
 
-    # cv2.namedWindow('img', cv2.WINDOW_NORMAL)
-    # cv2.imshow("img", x)
-    # cv2.waitKey(0)
-
     # Resize and normalize the image
     max_width = 110
     max_height = 110
     x = cv2.resize(x, (110, 110))
-    # x = cv2.resize(x, (0, 0), fx=min(max_width / x.shape[1], max_height / x.shape[0]),
-    #                fy=min(max_width / x.shape[1], max_height / x.shape[0]))
     x = cv2.GaussianBlur(x, (5, 5), 0)
     x = cv2.normalize(x, None, -200, 500, cv2.NORM_MINMAX)
-
-    # cv2.namedWindow('img', cv2.WINDOW_NORMAL)
-    # cv2.imshow("img", x)
-    # cv2.waitKey(0)
 
     # Convert the image to grayscale
     if len(x.shape) == 2 or x.shape[2] == 1:
@@ -57,12 +47,6 @@ def get_contour(x):
     # cv2.namedWindow('img', cv2.WINDOW_NORMAL)
     # cv2.imshow("img", thinned)
     # cv2.waitKey(0)
-
-    # print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in thinned]))
-
-    # thinned = [[255, 0, 0, 0, 255], [0, 255, 255, 255, 0], [0, 255, 0, 255, 0], [0, 255, 255, 255, 0],
-    #            [0, 255, 0, 255, 0], [0, 255, 255, 255, 0], [255, 0, 0, 0, 255]]
-    # thinned = np.array(thinned)
 
     # Find the coordinates of all black pixels
     black_pixels = np.argwhere(thinned == 0)
@@ -104,9 +88,7 @@ def get_contour(x):
                 filler.append(current_contour.copy())
             else:
                 filler.append(current_contour.copy())
-                # cv2.namedWindow('img', cv2.WINDOW_NORMAL)
-                # cv2.imshow("img", thinned)
-                # cv2.waitKey(0)
+
             current_pixel = None
             for pixel in black_pixels:
                 if not any(list(pixel) in sublist for sublist in filler):

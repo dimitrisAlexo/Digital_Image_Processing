@@ -30,35 +30,9 @@ def get_dataset(img, text, blur, resize):
     fx, fy = resize, resize
     img = cv2.resize(img, (0, 0), fx=fx, fy=fy, interpolation=cv2.INTER_LINEAR)
 
-    # cv2.namedWindow('img', cv2.WINDOW_NORMAL)
-    # cv2.imshow("img", img.astype(np.uint8))
-    # cv2.waitKey(0)
-
     grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     grayscale = cv2.normalize(grayscale, None, 0, 255, cv2.NORM_MINMAX)
     inverted = cv2.bitwise_not(grayscale)
-
-    # cv2.namedWindow('img', cv2.WINDOW_NORMAL)
-    # cv2.imshow("img", inverted.astype(np.uint8))
-    # cv2.waitKey(0)
-
-    # grayscale = [[0, 0, 0, 0, 0, 0, 0, 0],
-    #              [0, 0, 0, 0, 0, 0, 0, 0],
-    #              [0, 255, 0, 255, 0, 255, 255, 0],
-    #              [0, 0, 0, 0, 0, 0, 0, 0],
-    #              [0, 0, 0, 0, 0, 0, 0, 0],
-    #              [0, 255, 0, 255, 255, 255, 0, 0],
-    #              [0, 0, 0, 0, 0, 0, 0, 0],
-    #              [0, 0, 0, 0, 0, 0, 0, 0],
-    #              [0, 255, 0, 255, 255, 255, 0, 0],
-    #              [0, 0, 0, 0, 0, 0, 0, 0]]
-    #
-    # print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in grayscale]))
-    #
-    # inverted = np.array(grayscale)
-    # cv2.namedWindow('img', cv2.WINDOW_NORMAL)
-    # cv2.imshow("img", inverted.astype(np.uint8))
-    # cv2.waitKey(0)
 
     # Calculate the vertical projection of the image
     vertical_proj = np.sum(inverted, axis=1)
@@ -93,11 +67,6 @@ def get_dataset(img, text, blur, resize):
     for line in lines:
 
         blurred_line = cv2.GaussianBlur(line, (blur * fx, blur * fy), 0)
-
-        # cv2.namedWindow('line', cv2.WINDOW_NORMAL)
-        # cv2.imshow('line', blurred_line.astype(np.uint8))
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
 
         # Calculate the horizontal projection of the image
         horizontal_proj = np.sum(blurred_line, axis=0)
@@ -165,20 +134,10 @@ def get_dataset(img, text, blur, resize):
 
         img_dataset.append(line_letters)
 
-    # cv2.namedWindow('line', cv2.WINDOW_NORMAL)
-    # cv2.imshow('line', img_dataset[0][0][0].astype(np.uint8))
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-
     # Calculate each contour for every letter of the text
     for line in img_dataset:
         for word in line:
             for i, letter in enumerate(word):
-
-                # cv2.namedWindow('line', cv2.WINDOW_NORMAL)
-                # cv2.imshow('line', letter.astype(np.uint8))
-                # cv2.waitKey(0)
-                # cv2.destroyAllWindows()
 
                 letter = np.pad(letter, [(5, 0), (0, 0)], mode='constant')
                 projection = np.sum(letter, axis=1)  # Compute column-wise sum of pixel values
@@ -193,91 +152,15 @@ def get_dataset(img, text, blur, resize):
                 letter = letter[:crop_row]  # Crop the image vertically
 
                 if np.all(letter == 0):
-                    # cv2.namedWindow('line', cv2.WINDOW_NORMAL)
-                    # cv2.imshow('line', letter.astype(np.uint8))
-                    # cv2.waitKey(0)
-                    # cv2.destroyAllWindows()
 
                     height, width = letter.shape
                     center_x = width // 2
                     center_y = height // 2
                     letter[center_y-2:center_y+3, center_x-2:center_x+3] = 255
 
-                    # cv2.namedWindow('line', cv2.WINDOW_NORMAL)
-                    # cv2.imshow('line', letter.astype(np.uint8))
-                    # cv2.waitKey(0)
-                    # cv2.destroyAllWindows()
-
-                # cv2.namedWindow('line', cv2.WINDOW_NORMAL)
-                # cv2.imshow('line', letter.astype(np.uint8))
-                # cv2.waitKey(0)
-                # cv2.destroyAllWindows()
-
                 kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
                 word[i] = cv2.morphologyEx(letter, cv2.MORPH_OPEN, kernel)
                 word[i] = get_contour(word[i])
-
-    # for line in img_dataset:
-    #     for word in line:
-    #         for letter in word:
-    #             # Create binary image with only the pixels indicated by the outer and inner contours
-    #             binary_contours = np.zeros((110, 110)) + 255
-    #             for pixel in letter[0]:
-    #                 binary_contours[pixel[0], pixel[1]] = 0
-    #             if len(letter) > 1:
-    #                 for pixel in letter[1]:
-    #                     binary_contours[pixel[0], pixel[1]] = 200
-    #             if len(letter) > 2:
-    #                 for pixel in letter[2]:
-    #                     binary_contours[pixel[0], pixel[1]] = 150
-    #
-    #             binary_contours = binary_contours.astype(np.uint8)
-    #
-    #             # Show the binary image with only the pixels indicated by the contour
-    #             cv2.namedWindow('Contours', cv2.WINDOW_NORMAL)
-    #             cv2.imshow('Contours', binary_contours)
-    #             cv2.waitKey(0)
-    #             cv2.destroyAllWindows()
-
-    # # Create a figure and axes for each line
-    # for line in img_dataset:
-    #     fig, axes = plt.subplots(1, len(line), figsize=(10, 1))  # Create subplots for each word in the line
-    #
-    #     # Iterate over each word in the line
-    #     for word_index, word in enumerate(line):
-    #         # Create a blank canvas for the word
-    #         word_canvas = np.zeros((110, 110 * len(word))) + 255
-    #
-    #         # Iterate over each letter in the word
-    #         for letter_index, letter in enumerate(word):
-    #             # Create binary image with only the pixels indicated by the outer and inner contours
-    #             binary_contours = np.zeros((110, 110)) + 255
-    #             for pixel in letter[0]:
-    #                 binary_contours[pixel[0], pixel[1]] = 0
-    #             if len(letter) > 1:
-    #                 for pixel in letter[1]:
-    #                     binary_contours[pixel[0], pixel[1]] = 200
-    #             if len(letter) > 2:
-    #                 for pixel in letter[2]:
-    #                     binary_contours[pixel[0], pixel[1]] = 150
-    #
-    #             binary_contours = binary_contours.astype(np.uint8)
-    #
-    #             # Place the letter image in the word canvas
-    #             word_canvas[:, letter_index * 110: (letter_index + 1) * 110] = binary_contours
-    #
-    #         # Display the word canvas in the corresponding subplot
-    #         axes[word_index].imshow(word_canvas, cmap='gray')
-    #         axes[word_index].axis('off')
-    #
-    #     # Adjust spacing between subplots
-    #     plt.subplots_adjust(wspace=0, hspace=0)
-    #
-    #     # Show the line window with letters arranged side by side
-    #     plt.show()
-
-    # with open(text, 'r', encoding='utf-8') as f:
-    #     lines = f.read().splitlines()
 
     # Try reading as UTF-8 first
     try:
@@ -303,16 +186,6 @@ def get_dataset(img, text, blur, resize):
     print(ascii_dataset)
     print(sum(len(elem) for sublist in ascii_dataset for elem in sublist for elem in elem))
     print(sum(len(elem) for sublist in img_dataset for elem in sublist))
-
-    # background = np.zeros((110, 110), dtype=np.uint8)
-    # # set the pixels to white
-    # for coord in img_dataset[4][5][1][0]:
-    #     background[coord[0], coord[1]] = 255
-    #
-    # cv2.namedWindow('line', cv2.WINDOW_NORMAL)
-    # cv2.imshow('line', background.astype(np.uint8))
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
 
     print(ascii_dataset[4][5][1])
 
@@ -417,10 +290,6 @@ def form_dataset(class1, class2, class3, N):
         row = np.concatenate(
             (descriptor1, descriptor2, descriptor3, [label]))  # add the label and the three descriptors
         dataset3 = pd.concat([dataset3, pd.DataFrame([row])])
-
-    # print(dataset1)
-    # print(dataset2)
-    # print(dataset3)
 
     return dataset1, dataset2, dataset3
 
